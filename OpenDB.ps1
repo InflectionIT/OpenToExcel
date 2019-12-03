@@ -21,6 +21,42 @@ class OpenDB
         return $this.ExecuteSQL($query)
     } 
 
+    SaveRequestAttachmentsToDisk([int]$RequestID, [string]$filepath) {
+        $attachments = $this.GetAttachmentsForRequest($RequestID)
+
+        foreach($att in $attachments.rows) {
+            $filename = $att.Name
+            $path = $filepath + $filename
+            if ($att.ContentType -eq 'text/plain') {
+                $bytes = $att.Content
+                $output = [System.Text.Encoding]::ASCII.GetString($bytes)
+                $output | Out-File -LiteralPath $path
+            }
+            else {
+                $bytes = $att.Content
+                [io.file]::WriteAllBytes($path, $bytes) 
+            }
+        }
+    }    
+
+    [array] GetAttachmentsForRequest([int]$RequestID) {
+        $query = "select Component_Id FROM Requests WHERE id = $RequestID"
+        $results = $this.ExecuteSQL($query)
+        $ComponentID = $results.Component_Id
+
+        $query = "select a.Name, a.ContentType, c.Content from DocumentsContent c
+            JOIN Attachments a on a.DocumentsContentId = c.Id
+            where c.Id in (select DocumentsContentId from Attachments where RootComponent_Id = $ComponentID)"
+
+        return $this.ExecuteSQL($query)
+    }
+
+    #[string] GetAttachment($id) {
+    #    $query = "SELECT CONVERT(VARCHAR(MAX), Content) from DocumentsContent WHERE Id = '$id'"
+    #
+    #    return $this.ExecuteSQL($query)
+    #}
+
     [string] GetAnswerValue($answer) {
         # Attachments
         if ($answer.AnswerType -eq 'IntApp.Wilco.Model.Forms.AnswerTypes.AttachmentAnswer') { 

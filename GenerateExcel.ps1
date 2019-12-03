@@ -24,6 +24,7 @@ Write-Host "$($ids.count) requests found"
 $requestanswers = @()
 foreach($reqID in $ids) {
     #Get rows for specific request
+    Write-Host "Processing request: $($reqId.name)"
     Write-Host "Parsing answers for request: $($reqId.name)"
     $rows = $requests.rows | Where-Object -FilterScript { $_.id -eq $reqId.id}
     # Build object for each request
@@ -40,12 +41,16 @@ foreach($reqID in $ids) {
         }
     }
     $requestanswers += $obj
-
+    Write-Host "Extracting attachments for request: $($reqId.name)"
+    $opendb.SaveRequestAttachmentsToDisk($reqId.id, "c:\temp\")
+    Write-Host "-------------------------------"
 }
 
 Write-Host "Finished parsing requests"
 $requestanswers | ConvertTo-Excel -Path 'OpenRequests.xlsx' -WorkSheetName 'Requests' -AutoFilter
 Write-Host "Excel spreadsheet has been created"
+
+#$opendb.SaveRequestAttachmentsToDisk(92, "c:\temp\")
 
 $stopwatch.Stop()
 $stopwatch.Elapsed
