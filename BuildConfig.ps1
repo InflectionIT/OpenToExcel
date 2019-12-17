@@ -20,9 +20,16 @@ foreach ($row in $requests.rows) {
     $questions[$questiondetails.id] = $questiondetails
 }
 
-$config = @()
+$questionsJSON = @()
+
 foreach($key in $questions.keys) {
-    $config += $questions[$key]
+    $questionsJSON += $questions[$key]
+}
+
+$config = [ordered]@{
+    attachmentPath = "c:\temp";
+    excelPath = "c:\temp\OpenRequests.xlsx";
+    questions = $questionsJSON;
 }
 $config | ConvertTo-Json | Out-File "config.json"
 

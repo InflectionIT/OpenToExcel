@@ -7,8 +7,8 @@ $stopwatch = [system.diagnostics.stopwatch]::StartNew()
 
 $config = Get-Content -Raw -Path "config.json" | ConvertFrom-Json
 $questions = @{}
-$config = $config | Where-Object -FilterScript { $_.display -eq $true} | select id, name, display, title, value
-foreach ($row in $config) {
+$questionsJSON = $config.questions | Where-Object -FilterScript { $_.display -eq $true} | select id, name, display, title, value
+foreach ($row in $questionsJSON) {
     $questions[$row.id] = $row
 }
 
@@ -37,20 +37,19 @@ foreach($reqID in $ids) {
         if ($questionconfig.display -eq 'True') {
             $answer = $rows | Where-Object -FilterScript { $_.questionid -eq $questionconfig.id }
             $answervalue = $opendb.GetAnswerValue($answer)
-            $obj | Add-Member -MemberType NoteProperty -Name $questionconfig.title -Value $answervalue #$answer.AnswerDisplayValue #$answer.Properties[$answervalue].Value
+            $obj | Add-Member -MemberType NoteProperty -Name $questionconfig.title -Value $answervalue 
         }
     }
     $requestanswers += $obj
     Write-Host "Extracting attachments for request: $($reqId.name)"
-    $opendb.SaveRequestAttachmentsToDisk($reqId.id, "c:\temp\")
+    $opendb.SaveRequestAttachmentsToDisk($reqId.id, $config.attachmentPath)
     Write-Host "-------------------------------"
 }
 
 Write-Host "Finished parsing requests"
-$requestanswers | ConvertTo-Excel -Path 'OpenRequests.xlsx' -WorkSheetName 'Requests' -AutoFilter
+$requestanswers | ConvertTo-Excel -Path $config.excelPath -WorkSheetName 'Requests' -AutoFilter
 Write-Host "Excel spreadsheet has been created"
-
-#$opendb.SaveRequestAttachmentsToDisk(92, "c:\temp\")
 
 $stopwatch.Stop()
 $stopwatch.Elapsed
+

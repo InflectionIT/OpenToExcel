@@ -64,12 +64,40 @@ class OpenDB
         }
         # DataTables
         elseif ($answer.AnswerType -eq 'System.Data.DataTable') {
-            return "<Invalid question type>"
+            return $this.GetGridAnswerValue([xml]$answer.AnswerValue)
         }
         else {
             return $answer.AnswerDisplayValue
         }
     
+    }
+
+    [string] GetGridAnswerValue($gridXML) {
+        #Get Grid ID
+        $gridid = $gridXML.DataTable.schema.element.MainDataTable
+
+        #Get all question answers
+        $rows = Select-XML -xml $gridXML -XPath "//$gridid"
+
+        $gridOutput = ''
+        #Loop over each grid row and extract results
+        foreach($row in $rows.Node) {
+            foreach($props in $row.PSObject.Properties) {
+                if ($props.Name.StartsWith("col_")) {
+                    $propName = $props.Name
+                    $property = $row | Select-Object -ExpandProperty $propName
+                    if ([bool]($property.PSObject.Properties.name -match "Value")) {
+                        $gridOutput += $property.Value + '|'
+                    }
+                    else {
+                        $gridOutput += $property + '|'
+                    }
+                }
+            }
+            $gridOutput += "`r`n"
+        }
+
+        return $gridOutput
     }
     
     [array] GetRequests([string]$Status, [string]$RequestType) {
