@@ -1,6 +1,6 @@
 class OpenDB
 {
-    [string] $connectionString = 'Data Source=172.83.12.210;Initial Catalog=Flowdb;User ID=sa;Password=Tsunami9!'
+    [string] $connectionString = 'Data Source=<server>;Initial Catalog=Flowdb;User ID=<user>;Password=<password>'
     [SQLHelper]$sql 
 
     OpenDB()
