@@ -53,7 +53,7 @@ function GenerateExcelFromRequest([int]$requestID) {
     Write-Host "Finished parsing requests"
     $filename = $requests.rows[0].name.Split([IO.Path]::GetInvalidFileNameChars()) -join '_'
     $filepath = $config.attachmentPath + $filename + '.xlsx'
-    $requestanswers | ConvertTo-Excel -Path $filepath -WorkSheetName 'Requests' -AutoFilter
+    $requestanswers | ConvertTo-Excel -Path $filepath -WorkSheetName 'Requests' -AutoFilter -AutoFit
     Write-Host "Excel spreadsheet has been created"
 
     $stopwatch.Stop()
